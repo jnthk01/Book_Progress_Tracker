@@ -9,7 +9,7 @@ class Genre(enum.Enum):
 class Book(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
-    genre = db.Column(db.Enum(Genre), nullable=False)
+    genre = db.Column(db.Enum(Genre, values_callable=lambda x: [e.value for e in x]), nullable=False)
     is_completed = db.Column(db.Boolean, default=False)
     pages_total = db.Column(db.Integer, nullable=False)
     pages_read = db.Column(db.Integer, default=0)

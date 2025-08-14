@@ -5,6 +5,7 @@ from backend import db, ma, models
 from backend.auth import auth_bp, bcrypt
 from flask_jwt_extended import JWTManager
 from backend.db_commands import init_db_command
+from backend.books import books_bp
 
 load_dotenv()
 
@@ -20,6 +21,7 @@ db.init_app(app)
 ma.init_app(app)
 
 app.register_blueprint(auth_bp, url_prefix='/auth')
+app.register_blueprint(books_bp, url_prefix='/api')
 
 app.cli.add_command(init_db_command)
 
