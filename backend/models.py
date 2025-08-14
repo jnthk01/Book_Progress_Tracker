@@ -19,3 +19,8 @@ class Book(db.Model):
         if self.pages_total > 0:
             return (self.pages_read / self.pages_total) * 100
         return 0
+
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    password = db.Column(db.String(200), nullable=False)
