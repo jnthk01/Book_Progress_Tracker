@@ -7,3 +7,4 @@ marshmallow-sqlalchemy
 flask-bcrypt 
 flask-jwt-extended
 requests
+flask-cors

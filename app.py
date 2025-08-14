@@ -4,12 +4,14 @@ from dotenv import load_dotenv
 from backend import db, ma, models
 from backend.auth import auth_bp, bcrypt
 from flask_jwt_extended import JWTManager
+from flask_cors import CORS
 from backend.db_commands import init_db_command
 from backend.books import books_bp
 
 load_dotenv()
 
 app = Flask(__name__)
+CORS(app)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///books.db'
 

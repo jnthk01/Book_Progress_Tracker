@@ -1,2 +1,7 @@
 .env
 __pycache__/
+myenv/
+instance/
+instance/books.db
+frontend/node_modules/
+frontend/build/

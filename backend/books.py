@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from sqlalchemy import asc, desc
 from .models import db, Book, Genre
 from .schemas import BookSchema
 
@@ -25,14 +26,41 @@ def get_books():
     page = request.args.get('page', 1, type=int)
     limit = request.args.get('limit', 5, type=int)
     genre_filter = request.args.get('genre', type=str)
+    search_title = request.args.get('search_title', type=str)
+    sort_by = request.args.get('sort_by', type=str)
+    sort_order = request.args.get('sort_order', 'asc', type=str)
 
     query = Book.query
+
+    if search_title:
+        query = query.filter(Book.title.ilike(f'%{search_title}%'))
+
     if genre_filter:
         try:
             genre_enum = Genre[genre_filter.upper()]
-            query = query.filter_by(genre=genre_enum)
+            query = query.filter(Book.genre == genre_enum)
         except KeyError:
             return jsonify({'error': f'Invalid genre: {genre_filter}'}), 400
+
+    if sort_by:
+        sortable_fields = {
+            'title': Book.title,
+            'pages_total': Book.pages_total,
+            'pages_read': Book.pages_read,
+            'genre': Book.genre,
+            'is_completed': Book.is_completed,
+        }
+        field_to_sort = sortable_fields.get(sort_by)
+
+        if field_to_sort is None:
+            return jsonify({'error': f'Invalid sort_by field: {sort_by}'}), 400
+
+        if sort_order == 'asc':
+            query = query.order_by(asc(field_to_sort))
+        elif sort_order == 'desc':
+            query = query.order_by(desc(field_to_sort))
+        else:
+            return jsonify({'error': "Invalid sort_order. Must be 'asc' or 'desc'."}), 400
 
     paginated_books = query.paginate(page=page, per_page=limit, error_out=False)
     return jsonify(books_schema.dump(paginated_books.items))
