@@ -23,8 +23,6 @@ def create_book():
 @books_bp.route('/books', methods=['GET'])
 @jwt_required()
 def get_books():
-    page = request.args.get('page', 1, type=int)
-    limit = request.args.get('limit', 5, type=int)
     genre_filter = request.args.get('genre', type=str)
     search_title = request.args.get('search_title', type=str)
     sort_by = request.args.get('sort_by', type=str)
@@ -32,38 +30,61 @@ def get_books():
 
     query = Book.query
 
+    # Search by title
     if search_title:
         query = query.filter(Book.title.ilike(f'%{search_title}%'))
 
+    # Filter by genre
     if genre_filter:
         try:
             genre_enum = Genre[genre_filter.upper()]
-            query = query.filter(Book.genre == genre_enum)
+            query = query.filter_by(genre=genre_enum)
         except KeyError:
             return jsonify({'error': f'Invalid genre: {genre_filter}'}), 400
 
+    # Sorting
     if sort_by:
-        sortable_fields = {
-            'title': Book.title,
-            'pages_total': Book.pages_total,
-            'pages_read': Book.pages_read,
-            'genre': Book.genre,
-            'is_completed': Book.is_completed,
-        }
-        field_to_sort = sortable_fields.get(sort_by)
-
-        if field_to_sort is None:
-            return jsonify({'error': f'Invalid sort_by field: {sort_by}'}), 400
-
-        if sort_order == 'asc':
-            query = query.order_by(asc(field_to_sort))
-        elif sort_order == 'desc':
-            query = query.order_by(desc(field_to_sort))
+        if sort_by == 'progress_percent':
+            # progress_percent will be sorted in Python after fetching
+            pass
         else:
-            return jsonify({'error': "Invalid sort_order. Must be 'asc' or 'desc'."}), 400
+            sortable_fields = {
+                'title': Book.title,
+                'pages_total': Book.pages_total,
+                'pages_read': Book.pages_read,
+                'genre': Book.genre,
+                'is_completed': Book.is_completed,
+            }
+            field_to_sort = sortable_fields.get(sort_by)
 
-    paginated_books = query.paginate(page=page, per_page=limit, error_out=False)
-    return jsonify(books_schema.dump(paginated_books.items))
+            if field_to_sort is None:
+                return jsonify({'error': f'Invalid sort_by field: {sort_by}'}), 400
+
+            if sort_order == 'asc':
+                query = query.order_by(asc(field_to_sort))
+            elif sort_order == 'desc':
+                query = query.order_by(desc(field_to_sort))
+            else:
+                return jsonify({'error': "Invalid sort_order. Must be 'asc' or 'desc'."}), 400
+
+    items = query.all()
+
+    if sort_by == 'progress_percent':
+        items.sort(key=lambda x: x.progress_percent, reverse=(sort_order == 'desc'))
+    elif sort_by and sort_by != 'progress_percent':
+        # Re-sort if SQLAlchemy sort was applied
+        sortable_fields = {
+            'title': lambda x: x.title.lower(),
+            'pages_total': lambda x: x.pages_total,
+            'pages_read': lambda x: x.pages_read,
+            'genre': lambda x: x.genre.value.lower(),
+            'is_completed': lambda x: x.is_completed,
+        }
+        sort_key_func = sortable_fields.get(sort_by)
+        if sort_key_func:
+            items.sort(key=sort_key_func, reverse=(sort_order == 'desc'))
+
+    return jsonify(books_schema.dump(items))
 
 @books_bp.route('/books/<int:book_id>', methods=['GET'])
 @jwt_required()

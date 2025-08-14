@@ -1,0 +1,24 @@
+.container {
+  padding: 1rem;
+}
+
+.searchInput,
+.sortSelect {
+  padding: 0.5rem;
+  margin-right: 0.5rem;
+}
+
+.bookList {
+  list-style: none;
+  padding: 0;
+}
+
+.bookItem {
+  border-bottom: 1px solid #ccc;
+  padding: 0.5rem 0;
+}
+
+.noBooks {
+  font-style: italic;
+  color: #666;
+}

@@ -11,7 +11,7 @@ from backend.books import books_bp
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app)
+CORS(app) # Initialize CORS with your app
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///books.db'
 
