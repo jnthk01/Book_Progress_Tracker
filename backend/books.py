@@ -11,6 +11,71 @@ books_schema = BookSchema(many=True)
 @books_bp.route('/books', methods=['POST'])
 @jwt_required()
 def create_book():
+    """
+    Create a new book
+    ---
+    tags:
+      - Books
+    security:
+      - Bearer: []
+    parameters:
+      - in: body
+        name: body
+        schema:
+          id: BookCreate
+          required:
+            - title
+            - genre
+            - pages_total
+          properties:
+            title:
+              type: string
+              description: Title of the book
+              example: The Hitchhiker's Guide to the Galaxy
+            genre:
+              type: string
+              enum: [Fiction, Non-fiction, Fantasy]
+              description: Genre of the book
+              example: Fiction
+            pages_total:
+              type: integer
+              description: Total number of pages in the book
+              example: 193
+            pages_read:
+              type: integer
+              description: Number of pages read so far
+              example: 50
+            is_completed:
+              type: boolean
+              description: Whether the book is completed
+              example: false
+    responses:
+      201:
+        description: Book created successfully
+        schema:
+          id: Book
+          properties:
+            id:
+              type: integer
+            title:
+              type: string
+            genre:
+              type: string
+            pages_total:
+              type: integer
+            pages_read:
+              type: integer
+            is_completed:
+              type: boolean
+            progress_percent:
+              type: number
+      400:
+        description: Invalid input
+        schema:
+          $ref: '#/definitions/Error'
+      401:
+        description: Unauthorized
+    """
     current_user_id = get_jwt_identity()
     data = request.get_json()
     try:
@@ -26,6 +91,68 @@ def create_book():
 @books_bp.route('/books', methods=['GET'])
 @jwt_required()
 def get_books():
+    """
+    Get a list of books with optional filtering, sorting, and pagination
+    ---
+    tags:
+      - Books
+    security:
+      - Bearer: []
+    parameters:
+      - name: page
+        in: query
+        type: integer
+        description: Page number for pagination (default 1)
+        example: 1
+      - name: genre
+        in: query
+        type: string
+        enum: [Fiction, Non-fiction, Fantasy]
+        description: Filter books by genre
+        example: Fantasy
+      - name: search_title
+        in: query
+        type: string
+        description: Search books by title (case-insensitive)
+        example: guide
+      - name: sort_by
+        in: query
+        type: string
+        enum: [title, pages_total, pages_read, genre, is_completed, progress_percent]
+        description: Field to sort books by
+        example: title
+      - name: sort_order
+        in: query
+        type: string
+        enum: [asc, desc]
+        description: Sort order (asc or desc, default asc)
+        example: asc
+    responses:
+      200:
+        description: A list of books with pagination info
+        schema:
+          id: BookList
+          properties:
+            books:
+              type: array
+              items:
+                $ref: '#/definitions/Book'
+            total:
+              type: integer
+              description: Total number of books
+            pages:
+              type: integer
+              description: Total number of pages
+            current_page:
+              type: integer
+              description: Current page number
+      401:
+        description: Unauthorized
+      400:
+        description: Invalid sort_by or genre field
+        schema:
+          $ref: '#/definitions/Error'
+    """
     current_user_id = get_jwt_identity()
     page = request.args.get('page', 1, type=int)
     per_page = 6
@@ -86,6 +213,30 @@ def get_books():
 @books_bp.route('/books/<int:book_id>', methods=['GET'])
 @jwt_required()
 def get_book(book_id):
+    """
+    Get details of a specific book
+    ---
+    tags:
+      - Books
+    security:
+      - Bearer: []
+    parameters:
+      - name: book_id
+        in: path
+        type: integer
+        required: true
+        description: ID of the book to retrieve
+        example: 1
+    responses:
+      200:
+        description: Details of a single book
+        schema:
+          $ref: '#/definitions/Book'
+      401:
+        description: Unauthorized
+      404:
+        description: Book not found
+    """
     current_user_id = get_jwt_identity()
     book = Book.query.filter_by(id=book_id, user_id=current_user_id).first_or_404()  # Verify ownership
     return jsonify(book_schema.dump(book))
@@ -94,6 +245,60 @@ def get_book(book_id):
 @books_bp.route('/books/<int:book_id>', methods=['PUT'])
 @jwt_required()
 def update_book(book_id):
+    """
+    Update an existing book
+    ---
+    tags:
+      - Books
+    security:
+      - Bearer: []
+    parameters:
+      - name: book_id
+        in: path
+        type: integer
+        required: true
+        description: ID of the book to update
+        example: 1
+      - in: body
+        name: body
+        schema:
+          id: BookUpdate
+          properties:
+            title:
+              type: string
+              description: New title of the book
+              example: The Restaurant at the End of the Universe
+            genre:
+              type: string
+              enum: [Fiction, Non-fiction, Fantasy]
+              description: New genre of the book
+              example: Science Fiction
+            pages_total:
+              type: integer
+              description: New total number of pages
+              example: 250
+            pages_read:
+              type: integer
+              description: New number of pages read
+              example: 100
+            is_completed:
+              type: boolean
+              description: Whether the book is completed
+              example: true
+    responses:
+      200:
+        description: Book updated successfully
+        schema:
+          $ref: '#/definitions/Book'
+      400:
+        description: Invalid input
+        schema:
+          $ref: '#/definitions/Error'
+      401:
+        description: Unauthorized
+      404:
+        description: Book not found
+    """
     current_user_id = get_jwt_identity()
     book = Book.query.filter_by(id=book_id, user_id=current_user_id).first_or_404()  # Verify ownership
     data = request.get_json()
@@ -108,6 +313,33 @@ def update_book(book_id):
 @books_bp.route('/books/<int:book_id>', methods=['DELETE'])
 @jwt_required()
 def delete_book(book_id):
+    """
+    Delete a book
+    ---
+    tags:
+      - Books
+    security:
+      - Bearer: []
+    parameters:
+      - name: book_id
+        in: path
+        type: integer
+        required: true
+        description: ID of the book to delete
+        example: 1
+    responses:
+      200:
+        description: Book deleted successfully
+        schema:
+          properties:
+            message:
+              type: string
+              example: Book deleted
+      401:
+        description: Unauthorized
+      404:
+        description: Book not found
+    """
     current_user_id = get_jwt_identity()
     book = Book.query.filter_by(id=book_id, user_id=current_user_id).first_or_404()  # Verify ownership
     db.session.delete(book)

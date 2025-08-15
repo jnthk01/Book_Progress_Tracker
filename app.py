@@ -1,5 +1,28 @@
 import os
 from flask import Flask, jsonify
+from flasgger import Swagger
+
+swagger_template = {
+    "swagger": "2.0",
+    "info": {
+        "title": "Book Progress Tracker API",
+        "description": "API for tracking book progress",
+        "version": "1.0.0"
+    },
+    "securityDefinitions": {
+        "Bearer": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header",
+            "description": "JWT Authorization header using the Bearer scheme (Example: \"Bearer {token}\")"
+        }
+    },
+    "security": [
+        {
+            "Bearer": []
+        }
+    ]
+}
 from dotenv import load_dotenv  
 from backend import db, ma, models
 from backend.auth import auth_bp, bcrypt
@@ -12,6 +35,14 @@ load_dotenv()
 
 app = Flask(__name__)
 CORS(app) # Initialize CORS with your app
+
+# Swagger configuration
+app.config['SWAGGER'] = {
+    'title': 'Book Progress Tracker API',
+    'uiversion': 3,
+    'specs_route': '/docs/'
+}
+swagger = Swagger(app, template=swagger_template)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///books.db'
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import theme from '../styles/theme';
@@ -12,14 +12,69 @@ function Register() {
   const [isLoading, setIsLoading] = useState(false);
   const [focusedField, setFocusedField] = useState(null);
   const [errors, setErrors] = useState({});
+  const [usernameAvailability, setUsernameAvailability] = useState({
+    available: true,
+    message: '',
+  });
+  const [passwordValidity, setPasswordValidity] = useState({
+    minLength: false,
+    uppercase: false,
+    lowercase: false,
+    number: false,
+    specialChar: false,
+  });
+
+  const checkUsernameAvailability = useCallback(async (username) => {
+    if (username.length < 3) {
+      setUsernameAvailability({ available: false, message: '' });
+      return;
+    }
+    try {
+      const response = await axios.get(`http://127.0.0.1:5000/auth/check-username?username=${username}`);
+      if (response.data.available) {
+        setUsernameAvailability({ available: true, message: 'Username is available' });
+      } else {
+        setUsernameAvailability({ available: false, message: 'Username is already taken' });
+      }
+    } catch (error) {
+      setUsernameAvailability({ available: false, message: 'Error checking username' });
+    }
+  }, []);
+
+  useEffect(() => {
+    const debounceTimer = setTimeout(() => {
+      if (username) {
+        checkUsernameAvailability(username);
+      }
+    }, 500);
+
+    return () => clearTimeout(debounceTimer);
+  }, [username, checkUsernameAvailability]);
+
+  useEffect(() => {
+    setPasswordValidity({
+      minLength: password.length >= 8,
+      uppercase: /[A-Z]/.test(password),
+      lowercase: /[a-z]/.test(password),
+      number: /[0-9]/.test(password),
+      specialChar: /[!@#$%^&*(),.?":{}|<>]/.test(password),
+    });
+  }, [password]);
+
+  const isPasswordValid = () => {
+    return Object.values(passwordValidity).every(Boolean);
+  };
 
   const validateForm = () => {
     const newErrors = {};
     if (!username || username.length < 3) {
       newErrors.username = 'Username must be at least 3 characters long';
     }
-    if (!password || password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters long';
+    if (!usernameAvailability.available) {
+        newErrors.username = usernameAvailability.message;
+    }
+    if (!isPasswordValid()) {
+      newErrors.password = 'Please ensure your password meets all the requirements.';
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -31,7 +86,7 @@ function Register() {
     
     setIsLoading(true);
     try {
-      const response = await axios.post('http://127.0.0.1:5000/auth/register', {
+      await axios.post('http://127.0.0.1:5000/auth/register', {
         username,
         password,
       });
@@ -51,6 +106,13 @@ function Register() {
     ...(focusedField === fieldName ? commonStyles.inputFocused : {}),
     ...(hasError ? commonStyles.inputError : {})
   });
+
+  const PasswordRequirement = ({ isValid, text }) => (
+    <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.sm, color: isValid ? theme.success : theme.error }}>
+      <span>{isValid ? '✓' : '✗'}</span>
+      <span style={{ fontSize: theme.fontSizes.sm }}>{text}</span>
+    </div>
+  );
 
   return (
     <div style={commonStyles.container} className="fade-in">
@@ -82,9 +144,14 @@ function Register() {
               onBlur={() => setFocusedField(null)}
               required
               placeholder="Choose a username (min 3 characters)"
-              style={getInputStyle('username', errors.username)}
+              style={getInputStyle('username', errors.username || !usernameAvailability.available)}
               autoComplete="username"
             />
+            {username.length > 0 && (
+              <div style={{ fontSize: theme.fontSizes.sm, color: usernameAvailability.available ? theme.success : theme.error }}>
+                {usernameAvailability.message}
+              </div>
+            )}
             {errors.username && (
               <div style={commonStyles.errorMessage}>
                 ⚠️ {errors.username}
@@ -101,10 +168,17 @@ function Register() {
               onFocus={() => setFocusedField('password')}
               onBlur={() => setFocusedField(null)}
               required
-              placeholder="Create a password (min 6 characters)"
+              placeholder="Create a strong password"
               style={getInputStyle('password', errors.password)}
               autoComplete="new-password"
             />
+            <div style={{ marginTop: theme.spacing.md, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: theme.spacing.sm }}>
+              <PasswordRequirement isValid={passwordValidity.minLength} text="At least 8 characters" />
+              <PasswordRequirement isValid={passwordValidity.uppercase} text="One uppercase letter" />
+              <PasswordRequirement isValid={passwordValidity.lowercase} text="One lowercase letter" />
+              <PasswordRequirement isValid={passwordValidity.number} text="One number" />
+              <PasswordRequirement isValid={passwordValidity.specialChar} text="One special character" />
+            </div>
             {errors.password && (
               <div style={commonStyles.errorMessage}>
                 ⚠️ {errors.password}
@@ -114,13 +188,13 @@ function Register() {
           
           <button
             type="submit"
-            disabled={isLoading}
+            disabled={isLoading || !isPasswordValid() || !usernameAvailability.available}
             style={{
               ...commonStyles.submitButton,
               ...commonStyles.buttonSuccess,
               marginTop: theme.spacing.md,
-              opacity: isLoading ? 0.7 : 1,
-              cursor: isLoading ? 'not-allowed' : 'pointer'
+              opacity: (isLoading || !isPasswordValid() || !usernameAvailability.available) ? 0.7 : 1,
+              cursor: (isLoading || !isPasswordValid() || !usernameAvailability.available) ? 'not-allowed' : 'pointer'
             }}
           >
             {isLoading ? (

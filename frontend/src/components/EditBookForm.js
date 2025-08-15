@@ -19,6 +19,22 @@ function EditBookForm() {
   const { bookId } = useParams();
 
   useEffect(() => {
+    if (parseInt(pagesRead, 10) === parseInt(pagesTotal, 10) && parseInt(pagesTotal, 10) > 0) {
+      setIsCompleted(true);
+    } else {
+      setIsCompleted(false);
+    }
+  }, [pagesRead, pagesTotal]);
+
+  const handleCompletedChange = (e) => {
+    const checked = e.target.checked;
+    setIsCompleted(checked);
+    if (checked) {
+      setPagesRead(pagesTotal);
+    }
+  };
+
+  useEffect(() => {
     if (bookId) {
       const fetchBook = async () => {
         setIsLoading(true);
@@ -219,7 +235,7 @@ function EditBookForm() {
                 type="checkbox" 
                 id="completed"
                 checked={isCompleted} 
-                onChange={(e) => setIsCompleted(e.target.checked)}
+                onChange={handleCompletedChange}
                 style={{
                   width: '18px',
                   height: '18px',
