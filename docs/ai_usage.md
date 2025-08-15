@@ -582,3 +582,52 @@ Using: 1 MCP server (ctrl+t to view)
    - Failed: 0
 
   All book CRUD endpoints are working as expected!
+
+
+  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+   > My Books                                                                                                                                                                                     │
+│    india                                                                                                                                                                                        │
+│                                                                                                                                                                                                 │
+│    All Genres                                                                                                                                                                                   │
+│                                                                                                                                                                                                 │
+│    Sort By                                                                                                                                                                                      │
+│                                                                                                                                                                                                 │
+│    Ascending                                                                                                                                                                                    │
+│    No books in your collection yet. Add your first book!                                                                                                                                        │
+│                                                                                                                                                                                                 │
+│    Previous                                                                                                                                                                                     │
+│    Page 2 of 1                                                                                                                                                                                  │
+│    Next                                                                                                                                                                                         │
+│    Add New Book, so here the problem is that, everyting works fine when i use the first page, but the problem occurs when we are in a different page and then use the search feature, as the    │
+│    results would be filtered, it would occupy less pages than previously, so but we are in a later page when using the search feature but the generated filtered pages are less so it goes out  │
+│    of bounds, i hope you understand it and correct this exception                                                                                                                               │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+
+ ╭──────────────────────────────────────────────────╮
+ │ ✔  ReadFile frontend\src\components\BookList.js  │
+ ╰──────────────────────────────────────────────────╯
+ ╭───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+ │ ✔  Edit frontend\src\components\BookList.js:   useEffect(() => {... =>   useEffect(() => {...                                                                                         │
+ │                                                                                                                                                                                       │
+ │    61     fetchBooks(currentPage);                                                                                                                                                    │
+ │    62   }, [searchTitle, genreFilter, sortBy, sortOrder, token, currentPage]);                                                                                                        │
+ │    63                                                                                                                                                                                 │
+ │    64 + useEffect(() => {                                                                                                                                                             │
+ │    65 +   setCurrentPage(1);                                                                                                                                                          │
+ │    66 + }, [searchTitle, genreFilter, sortBy, sortOrder]);                                                                                                                            │
+ │    67 +                                                                                                                                                                               │
+ │    68   const confirmDelete = (bookId) => {                                                                                                                                           │
+ │    69     setBookToDelete(bookId);                                                                                                                                                    │
+ │    70     setShowConfirmModal(true);                                                                                                                                                  │
+ ╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+✦ You've spotted an excellent edge case! You are right, the page number wasn't being reset when applying filters, which could lead to an out-of-bounds page.
+
+  I've now fixed this. I've added logic to ensure that whenever you use the search or change the sorting/filtering options, the page number will automatically reset to 1. This will ensure you
+  always land on the first page of the filtered results, preventing the error you described.
+
+Using: 1 MCP server (ctrl+t to view)                                                                                                                     accepting edits (shift + tab to toggle)
+╭──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ >   Type your message or @path/to/file                                                                                                                                                       │
+╰───────────────────────────────────────────────

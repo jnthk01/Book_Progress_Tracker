@@ -2,20 +2,56 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import commonStyles from '../styles/commonStyles';
 import theme from '../styles/theme';
+import '../styles/animations.css';
 
 function NotFound() {
   return (
-    <div style={commonStyles.container}>
-      <div style={commonStyles.card}>
-        <div style={{ position: 'absolute', top: '20px', left: '20px' }}>
-          <Link to="/home" style={commonStyles.link}>Back to Home</Link>
+    <div style={commonStyles.container} className="fade-in">
+      <div style={{
+        ...commonStyles.card,
+        maxWidth: '500px',
+        textAlign: 'center'
+      }}>
+        <div style={{ marginBottom: theme.spacing.xl }}>
+          <div style={{ 
+            fontSize: '6rem', 
+            marginBottom: theme.spacing.md,
+            background: theme.gradientPrimary,
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            fontWeight: theme.fontWeights.bold
+          }}>404</div>
+          <h2 style={{
+            ...commonStyles.title,
+            marginBottom: theme.spacing.md
+          }}>Page Not Found</h2>
+          <p style={{
+            ...commonStyles.subtitle,
+            marginBottom: theme.spacing.xl
+          }}>
+            The page you're looking for doesn't exist or has been moved.
+          </p>
         </div>
-        <h2 style={commonStyles.title}>404 - Page Not Found</h2>
-        <p style={{...commonStyles.message, color: theme.textLight}}>
-          The page you are looking for does not exist.
-        </p>
-        <div style={commonStyles.loginLink}>
-          <Link to="/" style={commonStyles.link}>Go to Home</Link>
+        
+        <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing.md, alignItems: 'center' }}>
+          <Link 
+            to="/home" 
+            style={{
+              ...commonStyles.submitButton,
+              fontSize: theme.fontSizes.base
+            }}
+          >
+            🏠 Go Home
+          </Link>
+          <Link 
+            to="/books" 
+            style={{
+              ...commonStyles.link,
+              fontSize: theme.fontSizes.base
+            }}
+          >
+            📚 View Books
+          </Link>
         </div>
       </div>
     </div>

@@ -41,7 +41,7 @@ def get_books():
 
     if genre_filter:
         try:
-            genre_enum = Genre[genre_filter.upper()]
+            genre_enum = Genre[genre_filter.replace('-', '_').upper()]
             query = query.filter_by(genre=genre_enum)
         except KeyError:
             return jsonify({'error': f'Invalid genre: {genre_filter}'}), 400
