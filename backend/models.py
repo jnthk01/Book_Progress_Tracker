@@ -1,5 +1,6 @@
 from . import db
 import enum
+from sqlalchemy.orm import relationship
 
 class Genre(enum.Enum):
     FICTION = 'Fiction'
@@ -13,6 +14,9 @@ class Book(db.Model):
     is_completed = db.Column(db.Boolean, default=False)
     pages_total = db.Column(db.Integer, nullable=False)
     pages_read = db.Column(db.Integer, default=0)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+    user = relationship('User', backref='books')
 
     @property
     def progress_percent(self):

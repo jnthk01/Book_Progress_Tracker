@@ -12,7 +12,7 @@ function HomePage() {
       <div style={commonStyles.card}>
         <h2 style={commonStyles.title}>Welcome!</h2>
         <p style={{...commonStyles.message, color: theme.textLight, marginBottom: '30px'}}>
-          Navigate through the application:
+          Manage your personal book collection:
         </p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
           <Link to="/books" style={commonStyles.submitButton}>

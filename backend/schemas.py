@@ -9,6 +9,7 @@ class BookSchema(ma.SQLAlchemyAutoSchema):
 
     progress_percent = fields.Float(dump_only=True)
     genre = fields.Enum(Genre, by_value=True)
+    user_id = fields.Integer(dump_only=True)  # Don't allow setting user_id via API
 
 class UserSchema(ma.SQLAlchemyAutoSchema):
     class Meta:

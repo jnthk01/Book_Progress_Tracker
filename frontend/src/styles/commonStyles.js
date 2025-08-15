@@ -16,7 +16,7 @@ const commonStyles = {
     borderRadius: '15px',
     padding: '30px',
     width: '100%',
-    maxWidth: '1000px',
+    maxWidth: '900px',
     boxShadow: '0 8px 20px rgba(0,0,0,0.15)',
     transition: 'transform 0.3s ease, box-shadow 0.3s ease',
   },
@@ -52,14 +52,14 @@ const commonStyles = {
     outline: 'none',
   },
   submitButton: {
-    padding: '10px 15px',
+    padding: '12px 18px',
     backgroundColor: theme.primary,
     color: 'white',
     border: 'none',
     borderRadius: '8px',
     cursor: 'pointer',
     fontWeight: 'bold',
-    fontSize: '0.9rem',
+    fontSize: '1rem',
     transition: 'background-color 0.3s ease, transform 0.2s ease',
   },
   submitButtonHover: {
@@ -82,13 +82,13 @@ const commonStyles = {
     color: theme.textLight,
     fontWeight: 'bold',
   },
-  // NEW: Grid layout for book list
   bookListContainer: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
     gap: '15px',
     marginTop: '20px',
   },
+
   bookCard: {
     backgroundColor: '#fff',
     borderRadius: '10px',
@@ -98,6 +98,11 @@ const commonStyles = {
     flexDirection: 'column',
     gap: '4px',
     transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+    cursor: 'pointer',
+  },
+  bookCardHover: {
+    transform: 'translateY(-3px)',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
   },
   bookTitle: {
     fontSize: '1.1rem',

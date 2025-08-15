@@ -92,7 +92,7 @@ function BookList() {
               Home
             </Link>
           </div>
-          <h2 style={commonStyles.title}>Book List</h2>
+          <h2 style={commonStyles.title}>My Books</h2>
 
           
 
@@ -178,7 +178,7 @@ function BookList() {
               ))}
             </div>
           ) : (
-            <p style={{ color: theme.textDark }}>No books found. Add one!</p>
+            <p style={{ color: theme.textDark }}>No books in your collection yet. Add your first book!</p>
           )}
 
           {/* Add Book Button */}

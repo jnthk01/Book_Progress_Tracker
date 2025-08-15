@@ -11,24 +11,28 @@ books_schema = BookSchema(many=True)
 @books_bp.route('/books', methods=['POST'])
 @jwt_required()
 def create_book():
+    current_user_id = get_jwt_identity()
     data = request.get_json()
     try:
         new_book = book_schema.load(data)
+        new_book.user_id = current_user_id  # Assign current user's ID
         db.session.add(new_book)
         db.session.commit()
         return jsonify(book_schema.dump(new_book)), 201
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
+
 @books_bp.route('/books', methods=['GET'])
 @jwt_required()
 def get_books():
+    current_user_id = get_jwt_identity()
     genre_filter = request.args.get('genre', type=str)
     search_title = request.args.get('search_title', type=str)
     sort_by = request.args.get('sort_by', type=str)
     sort_order = request.args.get('sort_order', 'asc', type=str)
 
-    query = Book.query
+    query = Book.query.filter_by(user_id=current_user_id)  # Filter by logged-in user
 
     # Search by title
     if search_title:
@@ -45,8 +49,8 @@ def get_books():
     # Sorting
     if sort_by:
         if sort_by == 'progress_percent':
-            # progress_percent will be sorted in Python after fetching
-            pass
+            items = query.all()
+            items.sort(key=lambda x: x.progress_percent, reverse=(sort_order == 'desc'))
         else:
             sortable_fields = {
                 'title': Book.title,
@@ -56,8 +60,7 @@ def get_books():
                 'is_completed': Book.is_completed,
             }
             field_to_sort = sortable_fields.get(sort_by)
-
-            if field_to_sort is None:
+            if not field_to_sort:
                 return jsonify({'error': f'Invalid sort_by field: {sort_by}'}), 400
 
             if sort_order == 'asc':
@@ -66,36 +69,26 @@ def get_books():
                 query = query.order_by(desc(field_to_sort))
             else:
                 return jsonify({'error': "Invalid sort_order. Must be 'asc' or 'desc'."}), 400
-
-    items = query.all()
-
-    if sort_by == 'progress_percent':
-        items.sort(key=lambda x: x.progress_percent, reverse=(sort_order == 'desc'))
-    elif sort_by and sort_by != 'progress_percent':
-        # Re-sort if SQLAlchemy sort was applied
-        sortable_fields = {
-            'title': lambda x: x.title.lower(),
-            'pages_total': lambda x: x.pages_total,
-            'pages_read': lambda x: x.pages_read,
-            'genre': lambda x: x.genre.value.lower(),
-            'is_completed': lambda x: x.is_completed,
-        }
-        sort_key_func = sortable_fields.get(sort_by)
-        if sort_key_func:
-            items.sort(key=sort_key_func, reverse=(sort_order == 'desc'))
+            items = query.all()
+    else:
+        items = query.all()
 
     return jsonify(books_schema.dump(items))
+
 
 @books_bp.route('/books/<int:book_id>', methods=['GET'])
 @jwt_required()
 def get_book(book_id):
-    book = Book.query.get_or_404(book_id)
+    current_user_id = get_jwt_identity()
+    book = Book.query.filter_by(id=book_id, user_id=current_user_id).first_or_404()  # Verify ownership
     return jsonify(book_schema.dump(book))
+
 
 @books_bp.route('/books/<int:book_id>', methods=['PUT'])
 @jwt_required()
 def update_book(book_id):
-    book = Book.query.get_or_404(book_id)
+    current_user_id = get_jwt_identity()
+    book = Book.query.filter_by(id=book_id, user_id=current_user_id).first_or_404()  # Verify ownership
     data = request.get_json()
     try:
         updated_book = book_schema.load(data, instance=book, partial=True)
@@ -104,10 +97,12 @@ def update_book(book_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
+
 @books_bp.route('/books/<int:book_id>', methods=['DELETE'])
 @jwt_required()
 def delete_book(book_id):
-    book = Book.query.get_or_404(book_id)
+    current_user_id = get_jwt_identity()
+    book = Book.query.filter_by(id=book_id, user_id=current_user_id).first_or_404()  # Verify ownership
     db.session.delete(book)
     db.session.commit()
     return jsonify({'message': 'Book deleted'})
