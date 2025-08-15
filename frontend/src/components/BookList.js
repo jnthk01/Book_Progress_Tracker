@@ -163,7 +163,7 @@ function BookList() {
                   <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
                     <Link
                       to={`/edit-book/${book.id}`}
-                      style={{ ...commonStyles.submitButton, backgroundColor: theme.secondary }}
+                      style={{ ...commonStyles.submitButton, backgroundColor: 'black' }}
                     >
                       Edit
                     </Link>

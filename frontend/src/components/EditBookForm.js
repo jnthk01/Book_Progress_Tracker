@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import commonStyles from '../styles/commonStyles';
 import theme from '../styles/theme';
 import { toast } from 'react-toastify';
 
-function BookForm() {
+function EditBookForm() {
   const [title, setTitle] = useState('');
   const [genre, setGenre] = useState('Fiction');
   const [pagesTotal, setPagesTotal] = useState('');
@@ -13,9 +13,37 @@ function BookForm() {
   const [isCompleted, setIsCompleted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
-  
+  const { bookId } = useParams();
 
-  
+  useEffect(() => {
+    if (bookId) {
+      const fetchBook = async () => {
+        setIsLoading(true);
+        try {
+          const token = localStorage.getItem('access_token');
+          if (!token) {
+            toast.error('Please log in to edit books.');
+            setIsLoading(false);
+            return;
+          }
+          const response = await axios.get(`http://127.0.0.1:5000/api/books/${bookId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          const book = response.data;
+          setTitle(book.title);
+          setGenre(book.genre);
+          setPagesTotal(book.pages_total);
+          setPagesRead(book.pages_read);
+          setIsCompleted(book.is_completed);
+        } catch (error) {
+          toast.error('Failed to fetch book details: ' + (error.response?.data?.error || error.message));
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      fetchBook();
+    }
+  }, [bookId]);
 
   const validateForm = () => {
     const newErrors = {};
@@ -48,10 +76,10 @@ function BookForm() {
         is_completed: isCompleted,
       };
 
-      await axios.post('http://127.0.0.1:5000/api/books', bookData, {
+      await axios.put(`http://127.0.0.1:5000/api/books/${bookId}`, bookData, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      toast.success('Book added successfully!');
+      toast.success('Book updated successfully!');
     } catch (error) {
       toast.error('Failed to save book: ' + (error.response?.data?.error || error.message));
     } finally {
@@ -82,7 +110,7 @@ function BookForm() {
         <div style={{ position: 'absolute', top: '20px', left: '20px' }}>
           <Link to="/home" style={commonStyles.submitButton}>Home</Link>
         </div>
-        <h2 style={{ ...commonStyles.title, textAlign: 'center' }}>Add New Book</h2>
+        <h2 style={{ ...commonStyles.title, textAlign: 'center' }}>Edit Book</h2>
 
         {isLoading ? (
           <p style={{ color: theme.textDark, textAlign: 'center' }}>Loading form...</p>
@@ -120,7 +148,7 @@ function BookForm() {
               <label style={commonStyles.label}>Is Completed</label>
             </div>
 
-            <button type="submit" style={commonStyles.submitButton}>Add Book</button>
+            <button type="submit" style={commonStyles.submitButton}>Update Book</button>
           </form>
         )}
 
@@ -132,4 +160,4 @@ function BookForm() {
   );
 }
 
-export default BookForm;
+export default EditBookForm;

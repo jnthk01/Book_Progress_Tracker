@@ -4,6 +4,7 @@ import Login from './components/Login';
 import Register from './components/Register';
 import BookList from './components/BookList';
 import BookForm from './components/BookForm';
+import EditBookForm from './components/EditBookForm';
 import BookDetail from './components/BookDetail';
 import NotFound from './components/NotFound';
 import HomePage from './components/HomePage'; // Import HomePage
@@ -46,10 +47,10 @@ function App() {
                 }
               />
               <Route
-                path="/edit-book/:id"
+                path="/edit-book/:bookId"
                 element={
                   <ProtectedRoute>
-                    <BookForm />
+                    <EditBookForm />
                   </ProtectedRoute>
                 }
               />
