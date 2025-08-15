@@ -16,9 +16,11 @@ function BookList() {
   const [isLoading, setIsLoading] = useState(true);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [bookToDelete, setBookToDelete] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const { token, logout } = useContext(AuthContext);
 
-  const fetchBooks = async () => {
+  const fetchBooks = async (page = 1) => {
     setIsLoading(true);
     try {
       if (!token) {
@@ -27,6 +29,7 @@ function BookList() {
         return;
       }
       const params = new URLSearchParams();
+      params.append('page', page);
       if (searchTitle) params.append('search_title', searchTitle);
       if (genreFilter) params.append('genre', genreFilter);
       if (sortBy) params.append('sort_by', sortBy);
@@ -37,10 +40,14 @@ function BookList() {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      if (Array.isArray(response.data)) {
-        setBooks(response.data);
+      if (response.data && Array.isArray(response.data.books)) {
+        setBooks(response.data.books);
+        setTotalPages(response.data.pages);
+        setCurrentPage(response.data.current_page);
       } else {
         setBooks([]);
+        setTotalPages(1);
+        setCurrentPage(1);
       }
     } catch (error) {
       toast.error('Failed to fetch books: ' + (error.response?.data?.error || error.message));
@@ -51,8 +58,12 @@ function BookList() {
   };
 
   useEffect(() => {
-    fetchBooks();
-  }, [searchTitle, genreFilter, sortBy, sortOrder, token]);
+    fetchBooks(currentPage);
+  }, [searchTitle, genreFilter, sortBy, sortOrder, token, currentPage]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTitle, genreFilter, sortBy, sortOrder]);
 
   const confirmDelete = (bookId) => {
     setBookToDelete(bookId);
@@ -81,6 +92,18 @@ function BookList() {
   const handleCancelDelete = () => {
     setShowConfirmModal(false);
     setBookToDelete(null);
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
   };
 
   return (
@@ -180,6 +203,27 @@ function BookList() {
           ) : (
             <p style={{ color: theme.textDark }}>No books in your collection yet. Add your first book!</p>
           )}
+
+          {/* Pagination Controls */}
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '20px' }}>
+            <button
+              onClick={handlePrevPage}
+              disabled={currentPage === 1}
+              style={{ ...commonStyles.submitButton, margin: '0 5px' }}
+            >
+              Previous
+            </button>
+            <span style={{ color: theme.textDark }}>
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              onClick={handleNextPage}
+              disabled={currentPage === totalPages}
+              style={{ ...commonStyles.submitButton, margin: '0 5px' }}
+            >
+              Next
+            </button>
+          </div>
 
           {/* Add Book Button */}
           <div style={{ marginTop: '20px', textAlign: 'center' }}>

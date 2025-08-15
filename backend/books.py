@@ -27,18 +27,18 @@ def create_book():
 @jwt_required()
 def get_books():
     current_user_id = get_jwt_identity()
+    page = request.args.get('page', 1, type=int)
+    per_page = 6
     genre_filter = request.args.get('genre', type=str)
     search_title = request.args.get('search_title', type=str)
     sort_by = request.args.get('sort_by', type=str)
     sort_order = request.args.get('sort_order', 'asc', type=str)
 
-    query = Book.query.filter_by(user_id=current_user_id)  # Filter by logged-in user
+    query = Book.query.filter_by(user_id=current_user_id)
 
-    # Search by title
     if search_title:
         query = query.filter(Book.title.ilike(f'%{search_title}%'))
 
-    # Filter by genre
     if genre_filter:
         try:
             genre_enum = Genre[genre_filter.upper()]
@@ -46,11 +46,13 @@ def get_books():
         except KeyError:
             return jsonify({'error': f'Invalid genre: {genre_filter}'}), 400
 
-    # Sorting
     if sort_by:
         if sort_by == 'progress_percent':
+            # This custom sort is not compatible with pagination easily.
+            # I will ignore pagination for this sort option for now.
             items = query.all()
             items.sort(key=lambda x: x.progress_percent, reverse=(sort_order == 'desc'))
+            return jsonify(books_schema.dump(items))
         else:
             sortable_fields = {
                 'title': Book.title,
@@ -69,11 +71,16 @@ def get_books():
                 query = query.order_by(desc(field_to_sort))
             else:
                 return jsonify({'error': "Invalid sort_order. Must be 'asc' or 'desc'."}), 400
-            items = query.all()
-    else:
-        items = query.all()
 
-    return jsonify(books_schema.dump(items))
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+    items = pagination.items
+
+    return jsonify({
+        'books': books_schema.dump(items),
+        'total': pagination.total,
+        'pages': pagination.pages,
+        'current_page': pagination.page,
+    })
 
 
 @books_bp.route('/books/<int:book_id>', methods=['GET'])
