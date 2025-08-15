@@ -2,7 +2,7 @@
 
 ## Project Description
 
-This is a full-stack web application designed to help users track their reading progress. Users can register, log in, add books to their collection, update their reading progress, and manage their book list with features like filtering, sorting, and pagination.
+This is a full-stack web application designed to help users track their reading progress. It features a modern, responsive user interface and allows users to register, log in, add books to their collection, update their reading progress, and manage their book list with features like filtering, sorting, and pagination.
 
 ## Features
 
@@ -29,11 +29,11 @@ This is a full-stack web application designed to help users track their reading 
 
 ### Frontend (React)
 
--   **React:** JavaScript library for building user interfaces.
+-   **React:** JavaScript library for building the user interface.
 -   **React Router DOM:** For navigation and routing.
 -   **Axios:** Promise-based HTTP client for API requests.
 -   **React Toastify:** For displaying notifications.
--   **CSS Modules & Inline Styles:** For component-scoped and dynamic styling.
+-   **Custom CSS/Inline Styles:** For styling and responsive design, contributing to a modern UI/UX.
 
 ## Setup and Installation
 
