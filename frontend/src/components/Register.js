@@ -30,7 +30,7 @@ function Register() {
       return;
     }
     try {
-      const response = await axios.get(`http://127.0.0.1:5000/auth/check-username?username=${username}`);
+      const response = await axios.get(` https://book-progress-tracker.onrender.com/auth/check-username?username=${username}`);
       if (response.data.available) {
         setUsernameAvailability({ available: true, message: 'Username is available' });
       } else {
@@ -86,7 +86,7 @@ function Register() {
     
     setIsLoading(true);
     try {
-      await axios.post('http://127.0.0.1:5000/auth/register', {
+      await axios.post(' https://book-progress-tracker.onrender.com/auth/register', {
         username,
         password,
       });

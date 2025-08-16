@@ -45,7 +45,7 @@ function EditBookForm() {
             setIsLoading(false);
             return;
           }
-          const response = await axios.get(`http://127.0.0.1:5000/api/books/${bookId}`, {
+          const response = await axios.get(` https://book-progress-tracker.onrender.com/api/books/${bookId}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
           const book = response.data;
@@ -97,7 +97,7 @@ function EditBookForm() {
         is_completed: isCompleted,
       };
 
-      await axios.put(`http://127.0.0.1:5000/api/books/${bookId}`, bookData, {
+      await axios.put(` https://book-progress-tracker.onrender.com/api/books/${bookId}`, bookData, {
         headers: { Authorization: `Bearer ${token}` },
       });
       toast.success('Book updated successfully!');

@@ -38,7 +38,7 @@ function BookList() {
       if (sortBy) params.append('sort_by', sortBy);
       if (sortOrder) params.append('sort_order', sortOrder);
 
-      const response = await axios.get(`http://127.0.0.1:5000/api/books?${params.toString()}`, {
+      const response = await axios.get(` https://book-progress-tracker.onrender.com/api/books?${params.toString()}`, {
         headers: { 
           Authorization: `Bearer ${token}` 
         },
@@ -82,7 +82,7 @@ function BookList() {
         return;
       }
       
-      await axios.delete(`http://127.0.0.1:5000/api/books/${bookToDelete}`, {
+      await axios.delete(` https://book-progress-tracker.onrender.com/api/books/${bookToDelete}`, {
         headers: { 
           Authorization: `Bearer ${token}` 
         },
