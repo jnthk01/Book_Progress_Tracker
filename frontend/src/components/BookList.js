@@ -187,8 +187,7 @@ function BookList() {
                 <option value="pages_total">Total Pages</option>
                 <option value="pages_read">Pages Read</option>
                 <option value="genre">Genre</option>
-                <option value="is_completed">Completed</option>
-                <option value="progress_percent">Progress</option>
+                <option value="is_completed">Progress</option>
               </select>
             </div>
             <div style={commonStyles.formGroup}>
