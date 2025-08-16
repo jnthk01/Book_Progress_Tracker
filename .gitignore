@@ -6,3 +6,4 @@ instance/books.db
 frontend/node_modules/
 frontend/build/
 /test-requirements.txt
+/video_script.txt
