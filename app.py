@@ -1,6 +1,7 @@
 import os
 from flask import Flask, jsonify
 from flasgger import Swagger
+import click
 
 swagger_template = {
     "swagger": "2.0",
@@ -57,6 +58,13 @@ app.register_blueprint(auth_bp, url_prefix='/auth')
 app.register_blueprint(books_bp, url_prefix='/api')
 
 app.cli.add_command(init_db_command)
+
+@app.cli.command("init-db")
+def init_db():
+    """Initialize the database (creates tables)."""
+    with app.app_context():
+        db.create_all()
+        click.echo("✅ Database initialized.")
 
 @app.route('/ping')
 def ping():

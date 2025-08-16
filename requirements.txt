@@ -9,3 +9,4 @@ flask-jwt-extended
 requests
 flask-cors
 Flasgger
+click
